@@ -16,7 +16,8 @@ The more config languages a developer uses, the more libraries the end up needin
 For instance, a JSON library might specify a `JSONObject` and `JSONArray`, while a YAML library might specify a `YAMLSection` and `YAMLSequence`. These are actually the same thing.
 Of course, the YAML Specification is very lenient and advanced in the way it can be parsed into custom objects; however - most simply use it with primitives/scalars.
 
-Here's a neat experiment - give a JSON file to a YAML parser, what happens? You get a completely valid YAML Document. Why? Turns out JSON is valid YAML.
+Here's a neat experiment - give a JSON file to a YAML parser, what happens? You get a completely valid YAML Document. Why? Turns out JSON is valid YAML. So why have two separate libraries
+for the representation of their data?
 
 # Solution
 The solution is to create an abstract library that represents *ANY* Configuration type. The parsing/emitting is completely isolated from the document/config representation itself. A neat
