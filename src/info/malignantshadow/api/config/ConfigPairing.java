@@ -19,6 +19,13 @@ public class ConfigPairing {
 		return _value;
 	}
 	
+	public ConfigPairing get(String key, String... path) {
+		if (!isSection())
+			return null;
+		
+		return asSection().get(key, path);
+	}
+	
 	public Object set(Object value) {
 		Configs.checkValue(value);
 		Object old = _value;
