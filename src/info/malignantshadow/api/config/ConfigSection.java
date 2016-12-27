@@ -69,7 +69,7 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 			if (!p.getKey().equals(key))
 				continue;
 			
-			if (path.length == 0)
+			if (path == null || path.length == 0)
 				return p;
 			
 			String newKey = path[0];
