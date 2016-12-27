@@ -83,6 +83,81 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		return null;
 	}
 	
+	public Number getNumber(String key, String... path) {
+		return getNumber(0, key, path);
+	}
+	
+	public Number getNumber(Number def, String key, String... path) {
+		ConfigPairing pair = get(key, path);
+		if (pair == null)
+			return def;
+		
+		if (!pair.isNumber())
+			return pair.asNumber();
+		
+		return def;
+	}
+	
+	public String getString(String key, String... path) {
+		return getString("", key, path);
+	}
+	
+	public String getString(String def, String key, String... path) {
+		ConfigPairing pair = get(key, path);
+		if (pair == null)
+			return def;
+		
+		if (!pair.isString())
+			return pair.asString();
+		
+		return def;
+	}
+	
+	public boolean getBoolean(String key, String... path) {
+		return getBoolean(false, key, path);
+	}
+	
+	public boolean getBoolean(boolean def, String key, String... path) {
+		ConfigPairing pair = get(key, path);
+		if (pair == null)
+			return def;
+		
+		if (!pair.isBoolean())
+			return pair.asBoolean();
+		
+		return def;
+	}
+	
+	public ConfigSection getSection(String key, String... path) {
+		return getSection(new ConfigSection(), key, path);
+	}
+	
+	public ConfigSection getSection(ConfigSection def, String key, String... path) {
+		ConfigPairing pair = get(key, path);
+		if (pair == null)
+			return def;
+		
+		if (!pair.isSection())
+			return pair.asSection();
+		
+		return def;
+	}
+	
+	public ConfigSequence getSequence(String key, String... path) {
+		return getSequence(new ConfigSequence(), key, path);
+	}
+	
+	public ConfigSequence getSequence(ConfigSequence def, String key, String... path) {
+		ConfigPairing pair = get(key, path);
+		if (pair == null)
+			return def;
+		
+		if (!pair.isSequence())
+			return pair.asSequence();
+		
+		return def;
+	}
+	
 	//called only if they key doesn't exist, so it is safe to add a new one with that key
 	private ConfigPairing createPairing(String key, String... path) {
 		ConfigPairing pair = new ConfigPairing(key, null);
