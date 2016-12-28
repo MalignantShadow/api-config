@@ -100,7 +100,7 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		if (pair == null)
 			return def;
 		
-		if (!pair.isNumber())
+		if (pair.isNumber())
 			return pair.asNumber();
 		
 		return def;
@@ -115,7 +115,7 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		if (pair == null)
 			return def;
 		
-		if (!pair.isString())
+		if (pair.isString())
 			return pair.asString();
 		
 		return def;
@@ -130,7 +130,7 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		if (pair == null)
 			return def;
 		
-		if (!pair.isBoolean())
+		if (pair.isBoolean())
 			return pair.asBoolean();
 		
 		return def;
@@ -145,7 +145,7 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		if (pair == null)
 			return def;
 		
-		if (!pair.isSection())
+		if (pair.isSection())
 			return pair.asSection();
 		
 		return def;
@@ -160,7 +160,7 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		if (pair == null)
 			return def;
 		
-		if (!pair.isSequence())
+		if (pair.isSequence())
 			return pair.asSequence();
 		
 		return def;
