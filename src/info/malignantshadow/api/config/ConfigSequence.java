@@ -3,7 +3,6 @@ package info.malignantshadow.api.config;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 import info.malignantshadow.api.util.AttachableData;
 
@@ -12,6 +11,7 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 	private List<Object> _seq;
 	
 	public ConfigSequence() {
+		super();
 		_seq = new ArrayList<Object>();
 	}
 	
@@ -32,6 +32,81 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		return _seq.get(index);
 	}
 	
+	public Number getNumber(int index) {
+		return getNumber(0, index);
+	}
+	
+	public Number getNumber(Number def, int index) {
+		Object o = get(index);
+		if (o == null)
+			return def;
+		
+		if (o instanceof Number)
+			return (Number) o;
+		
+		return def;
+	}
+	
+	public String getString(int index) {
+		return getString("", index);
+	}
+	
+	public String getString(String def, int index) {
+		Object o = get(index);
+		if (o == null)
+			return def;
+		
+		if (o instanceof String)
+			return (String) o;
+		
+		return def;
+	}
+	
+	public boolean getBoolean(int index) {
+		return getBoolean(false, index);
+	}
+	
+	public boolean getBoolean(boolean def, int index) {
+		Object o = get(index);
+		if (o == null)
+			return def;
+		
+		if (o instanceof Boolean)
+			return (Boolean) o;
+		
+		return def;
+	}
+	
+	public ConfigSection getSection(int index) {
+		return getSection(new ConfigSection(), index);
+	}
+	
+	public ConfigSection getSection(ConfigSection def, int index) {
+		Object o = get(index);
+		if (o == null)
+			return def;
+		
+		if (o instanceof ConfigSection)
+			return (ConfigSection) o;
+		
+		return def;
+	}
+	
+	public ConfigSequence getSequence(int index) {
+		return getSequence(new ConfigSequence(), index);
+	}
+	
+	public ConfigSequence getSequence(ConfigSequence def, int index) {
+		Object o = get(index);
+		if (o == null)
+			return def;
+		
+		if (o instanceof ConfigSequence)
+			return (ConfigSequence) o;
+		
+		return def;
+	}
+	
 	public int size() {
 		return _seq.size();
 	}
@@ -47,11 +122,6 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 	
 	public boolean remove(Object value) {
 		return _seq.remove(value);
-	}
-	
-	@Override
-	public void forEach(Consumer<Object> consumer) {
-		_seq.forEach(consumer);
 	}
 	
 	@Override
