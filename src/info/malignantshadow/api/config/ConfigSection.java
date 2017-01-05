@@ -107,10 +107,10 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 	}
 	
 	public String getString(String key, String... path) {
-		return getString("", key, path);
+		return getStringWithDefault("", key, path);
 	}
 	
-	public String getString(String def, String key, String... path) {
+	public String getStringWithDefault(String def, String key, String... path) {
 		ConfigPairing pair = get(key, path);
 		if (pair == null)
 			return def;
