@@ -195,4 +195,21 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		
 		return list;
 	}
+	
+	public ConfigSequence conserveMemory() {
+		List<Object> newSeq = new ArrayList<Object>();
+		for (Object o : _seq) {
+			if (o == null)
+				continue;
+			
+			if (o instanceof ConfigSection)
+				newSeq.add(((ConfigSection) o).conserveMemory());
+			else if (o instanceof ConfigSequence)
+				newSeq.add(((ConfigSequence) o).conserveMemory());
+			else
+				newSeq.add(ConfigPairing.conserveMemory(o));
+		}
+		_seq = newSeq;
+		return this;
+	}
 }

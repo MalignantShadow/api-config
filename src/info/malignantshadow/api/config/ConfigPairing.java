@@ -106,4 +106,60 @@ public class ConfigPairing {
 		return _value.toString();
 	}
 	
+	public void conserveMemory() {
+		_value = conserveMemory(_value);
+	}
+	
+	public static Object conserveMemory(Object value) {
+		if (value == null)
+			return null;
+		;
+		
+		if (value instanceof String) {
+			String original = (String) value;
+			try {
+				//coerce value to double if possible, then continue to next if statement
+				return Double.parseDouble(original);
+			} catch (NumberFormatException e) {
+				return original;
+			}
+		}
+		
+		//don't do this for do this for floats or bytes, no work is needed if thats the case
+		if (value instanceof Number && !(value instanceof Float || value instanceof Byte)) {
+			Number original = (Number) value;
+			double d = original.doubleValue();
+			long l = original.longValue();
+			
+			//go down the line of primitive number types, finding
+			//the value that can use the lowest possible number of bytes, use that one
+			
+			if (d == l) { //whole number
+				int i = original.intValue();
+				if (l == i) {
+					short s = original.shortValue();
+					if (i == s) {
+						byte b = original.byteValue();
+						if (b == s)
+							return b;
+						else
+							return s;
+					} else {
+						return i;
+					}
+				} else {
+					return l;
+				}
+			} else { //decimal number (possibly float)
+				float f = original.floatValue();
+				if (d == f)
+					return f;
+				else
+					return d;
+			}
+		}
+		
+		return value;
+	}
+	
 }

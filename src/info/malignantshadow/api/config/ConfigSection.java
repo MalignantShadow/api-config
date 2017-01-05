@@ -236,6 +236,11 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		return map;
 	}
 	
+	public ConfigSection conserveMemory() {
+		_pairs.forEach(p -> p.conserveMemory());
+		return this;
+	}
+	
 	@Override
 	public Iterator<ConfigPairing> iterator() {
 		return _pairs.iterator();
