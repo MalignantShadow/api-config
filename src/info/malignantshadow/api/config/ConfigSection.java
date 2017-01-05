@@ -42,6 +42,13 @@ public class ConfigSection extends AttachableData implements Iterable<ConfigPair
 		return this;
 	}
 	
+	public ConfigPairing remove(String key) {
+		if (key == null)
+			return null;
+		
+		return ListUtil.remove(_pairs, p -> p != null && p.getKey().equals(key));
+	}
+	
 	public boolean isSet(String key) {
 		return ListUtil.contains(_pairs, p -> p != null && p.getKey().equals(key));
 	}
