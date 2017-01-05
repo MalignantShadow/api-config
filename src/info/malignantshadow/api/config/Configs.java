@@ -2,6 +2,9 @@ package info.malignantshadow.api.config;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+
+import info.malignantshadow.api.util.arguments.Argument;
 
 public class Configs {
 	
@@ -42,6 +45,23 @@ public class Configs {
 			return ConfigSection.fromMap((Map<?, ?>) object);
 		
 		return null;
+	}
+	
+	public static <T> T getComplex(T def, ConfigPairing pair, BiFunction<T, ConfigSection, T> fromSection, BiFunction<T, ConfigSequence, T> fromSequence, Argument.Type<T> fromString) {
+		if (pair == null)
+			return def;
+		
+		if (fromSection != null && pair.isSection())
+			return fromSection.apply(def, pair.asSection());
+		if (fromSequence != null && pair.isSequence())
+			return fromSequence.apply(def, pair.asSequence());
+		if (fromString != null && pair.isString()) {
+			T obj = fromString.getValue(pair.asString());
+			if (obj != null)
+				return obj;
+		}
+		
+		return def;
 	}
 	
 }
