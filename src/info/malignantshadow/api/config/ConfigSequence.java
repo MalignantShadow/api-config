@@ -15,14 +15,16 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		_seq = new ArrayList<Object>();
 	}
 	
-	public void add(int index, Object value) {
+	public ConfigSequence add(int index, Object value) {
 		Configs.checkValue(value);
 		_seq.add(index, value);
+		return this;
 	}
 	
-	public void add(Object value) {
+	public ConfigSequence add(Object value) {
 		Configs.checkValue(value);
 		_seq.add(value);
+		return this;
 	}
 	
 	public Object get(int index) {
@@ -56,8 +58,8 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		if (o == null)
 			return def;
 		
-		if (o instanceof String)
-			return (String) o;
+		if (o instanceof String || o instanceof Number || o instanceof Boolean)
+			return o.toString();
 		
 		return def;
 	}
