@@ -36,6 +36,7 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 	public static final int INDENT_SIZE = 2;
 	
 	public static final String D_LIST_TYPE = "NBT.TagListType";
+	
 	public static final String N_TAG_BYTE = "TAG_Byte";
 	public static final String N_TAG_SHORT = "TAG_Short";
 	public static final String N_TAG_INT = "TAG_Int";
@@ -263,10 +264,81 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		if (section == null || stream == null)
 			return false;
 		
-		DataOutputStream data = (stream instanceof DataOutputStream ? (DataOutputStream) stream : new DataOutputStream(stream));
-		//TODO: write NBT
-		
+		try {
+			DataOutputStream data = (stream instanceof DataOutputStream ? (DataOutputStream) stream : new DataOutputStream(stream));
+			putNamedTag(data, new ConfigPairing("", section));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return true;
+	}
+	
+	private void putCompound(DataOutputStream data, ConfigSection section) throws IOException {
+		for (ConfigPairing p : section)
+			putNamedTag(data, p);
+		data.writeByte(TAG_END);
+	}
+	
+	private void putList(DataOutputStream data, ConfigSequence sequence) throws IOException {
+		if (sequence.isEmpty())
+			return;
+		
+		data.writeInt(sequence.size());
+		
+		byte type = getTypeOf(sequence);
+		byte itemType = 0;
+		if (type == TAG_LIST) {
+			if (!sequence.isTyped() && !sequence.flattenType())
+				throw new ConfigProcessorException("NBT does not allow untyped lists/arrays", this);
+			
+			itemType = getTypeOf(sequence.get(0));
+		} else if (type == TAG_BYTE_ARRAY)
+			itemType = TAG_BYTE;
+		else if (type == TAG_INT_ARRAY)
+			itemType = TAG_INT;
+		
+		for (Object o : sequence) {
+			byte t = getTypeOf(o);
+			if (t != itemType)
+				throw new ConfigProcessorException(String.format("Unexpected item type %s, expected %s", getTagTypeName(t), getTagTypeName(itemType)), this);
+			
+			putPayload(data, o);
+		}
+	}
+	
+	private void putString(DataOutputStream data, String str) throws IOException {
+		data.writeInt(str.length());
+		data.write(str.getBytes(CHARSET));
+	}
+	
+	private void putNamedTag(DataOutputStream data, ConfigPairing tag) throws IOException {
+		data.writeByte(getTypeOf(tag.get()));
+		putString(data, tag.getKey());
+		putPayload(data, tag.get());
+	}
+	
+	private void putPayload(DataOutputStream data, Object payload) throws IOException {
+		if (payload instanceof Byte)
+			data.writeByte((Byte) payload);
+		else if (payload instanceof Short)
+			data.writeShort((Short) payload);
+		else if (payload instanceof Integer)
+			data.writeInt((Integer) payload);
+		else if (payload instanceof Long)
+			data.writeLong((Long) payload);
+		else if (payload instanceof Float)
+			data.writeFloat((Float) payload);
+		else if (payload instanceof Double)
+			data.writeDouble((Double) payload);
+		else if (payload instanceof Double)
+			data.writeDouble((Double) payload);
+		else if (payload instanceof String)
+			putString(data, (String) payload);
+		else if (payload instanceof ConfigSection)
+			putCompound(data, (ConfigSection) payload);
+		else if (payload instanceof ConfigSequence)
+			putList(data, (ConfigSequence) payload);
+		
 	}
 	
 	public String putDocument(ConfigSection section) {
