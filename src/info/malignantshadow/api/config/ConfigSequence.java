@@ -9,21 +9,25 @@ import info.malignantshadow.api.util.AttachableData;
 public class ConfigSequence extends AttachableData implements Iterable<Object> {
 	
 	private List<Object> _seq;
+	private boolean _needsConservation;
 	
 	public ConfigSequence() {
 		super();
 		_seq = new ArrayList<Object>();
+		_needsConservation = true;
 	}
 	
 	public ConfigSequence add(int index, Object value) {
 		Configs.checkValue(value);
 		_seq.add(index, value);
+		_needsConservation = true;
 		return this;
 	}
 	
 	public ConfigSequence add(Object value) {
 		Configs.checkValue(value);
 		_seq.add(value);
+		_needsConservation = true;
 		return this;
 	}
 	
@@ -197,6 +201,9 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 	}
 	
 	public ConfigSequence conserveMemory() {
+		if (!_needsConservation)
+			return this;
+		
 		List<Object> newSeq = new ArrayList<Object>();
 		for (Object o : _seq) {
 			if (o == null)
@@ -210,6 +217,7 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 				newSeq.add(ConfigPairing.conserveMemory(o));
 		}
 		_seq = newSeq;
+		_needsConservation = false;
 		return this;
 	}
 }
