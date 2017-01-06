@@ -152,6 +152,8 @@ public class ConfigPairing {
 				}
 			} else { //decimal number (possibly float)
 				float f = original.floatValue();
+				//in the rare case they are actually identical, use the float version
+				//e.g. one third (1/3) is different for both (.3333333 != .333333333333), but .5 is the same
 				if (d == f)
 					return f;
 				else
