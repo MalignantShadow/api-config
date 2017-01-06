@@ -117,6 +117,10 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		return _seq.size();
 	}
 	
+	public boolean isEmpty() {
+		return _seq.isEmpty();
+	}
+	
 	public Object set(int index, Object value) {
 		Configs.checkValue(value);
 		return _seq.set(index, value);
