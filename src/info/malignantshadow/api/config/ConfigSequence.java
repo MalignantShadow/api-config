@@ -25,10 +25,7 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 	}
 	
 	public ConfigSequence add(Object value) {
-		Configs.checkValue(value);
-		_seq.add(value);
-		_needsConservation = true;
-		return this;
+		return add(_seq.size(), value);
 	}
 	
 	public Object get(int index) {
@@ -156,40 +153,6 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		return seq;
 	}
 	
-	public boolean isTyped() {
-		return getType() != null;
-	}
-	
-	public Class<?> getType() {
-		Class<?> clazz = null;
-		for (Object o : _seq) {
-			if (o == null)
-				continue;
-			
-			Class<?> c = null;
-			if (o instanceof ConfigSection)
-				c = ConfigSection.class;
-			else if (o instanceof ConfigSequence)
-				c = ConfigSequence.class;
-			else if (o instanceof Boolean)
-				c = Boolean.class;
-			else if (o instanceof Number)
-				c = Number.class;
-			else if (o instanceof String)
-				c = String.class;
-			
-			if (clazz == null) {
-				clazz = c;
-				continue;
-			}
-			
-			if (clazz != c)
-				return null;
-		}
-		
-		return clazz;
-	}
-	
 	public List<Object> toList() {
 		List<Object> list = new ArrayList<Object>(_seq.size());
 		for (Object o : _seq) {
@@ -202,48 +165,6 @@ public class ConfigSequence extends AttachableData implements Iterable<Object> {
 		}
 		
 		return list;
-	}
-	
-	public boolean flattenType() {
-		Class<?> type = getType();
-		if (type == Number.class) {
-			conserveMemory();
-			int maxBytes = 0;
-			boolean whole = true;
-			for (Object o : _seq) {
-				if (o instanceof Byte && Byte.BYTES > maxBytes)
-					maxBytes = Byte.BYTES;
-				else if (o instanceof Short && Short.BYTES > maxBytes)
-					maxBytes = Short.BYTES;
-				else if (o instanceof Integer && Integer.BYTES > maxBytes)
-					maxBytes = Integer.BYTES;
-				else if (o instanceof Float && Float.BYTES > maxBytes) {
-					maxBytes = Float.BYTES;
-					whole = false;
-				} else if (o instanceof Double && Double.BYTES > maxBytes) {
-					maxBytes = Double.BYTES;
-					whole = false;
-				} else if (o instanceof Long && Long.BYTES > maxBytes)
-					maxBytes = Long.BYTES;
-			}
-			List<Object> newSeq = new ArrayList<Object>();
-			for (Object o : _seq) {
-				Number n = (Number) o;
-				if (maxBytes == Byte.BYTES)
-					newSeq.add(n.byteValue());
-				else if (maxBytes == Short.BYTES)
-					newSeq.add(n.shortValue());
-				else if (maxBytes == Integer.BYTES)
-					newSeq.add(whole ? n.intValue() : n.floatValue());
-				else if (maxBytes == Long.BYTES)
-					newSeq.add(whole ? n.longValue() : n.doubleValue());
-			}
-			_seq = newSeq;
-			return true;
-		} else if (type == null)
-			return false;
-		
-		return true;
 	}
 	
 	public ConfigSequence conserveMemory() {
