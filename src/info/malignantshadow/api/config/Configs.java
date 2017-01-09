@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import info.malignantshadow.api.config.processor.extension.JsonConfigProcessor;
+import info.malignantshadow.api.config.processor.extension.NbtConfigProcessor;
+import info.malignantshadow.api.config.processor.extension.YamlConfigProcessor;
 import info.malignantshadow.api.util.arguments.Argument;
 
 public class Configs {
@@ -62,6 +65,26 @@ public class Configs {
 		}
 		
 		return def;
+	}
+	
+	public static JsonConfigProcessor json() {
+		return new JsonConfigProcessor();
+	}
+	
+	public static NbtConfigProcessor nbt() {
+		return new NbtConfigProcessor();
+	}
+	
+	public static YamlConfigProcessor yaml() {
+		return new YamlConfigProcessor();
+	}
+	
+	public static YamlConfigProcessor yaml(int indentSize, int width) {
+		return new YamlConfigProcessor(indentSize, width);
+	}
+	
+	public static YamlConfigProcessor yaml(int indentSize, int width, Boolean blockStyle) {
+		return new YamlConfigProcessor(indentSize, width, blockStyle);
 	}
 	
 }
