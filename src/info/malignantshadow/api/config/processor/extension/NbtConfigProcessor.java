@@ -1,5 +1,7 @@
 package info.malignantshadow.api.config.processor.extension;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -14,6 +16,8 @@ import info.malignantshadow.api.config.ConfigPairing;
 import info.malignantshadow.api.config.ConfigProcessorException;
 import info.malignantshadow.api.config.ConfigSection;
 import info.malignantshadow.api.config.ConfigSequence;
+import info.malignantshadow.api.config.Configs;
+import info.malignantshadow.api.config.TypedConfigSequence;
 import info.malignantshadow.api.config.processor.BinaryConfigFileProcessor;
 import info.malignantshadow.api.config.processor.TextFileConfigProcessor;
 
@@ -58,7 +62,7 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		return TextFileConfigProcessor.getIndentString(INDENT_SIZE, indent);
 	}
 	
-	public static byte getListType(ConfigSequence seq) {
+	public static byte getListType(TypedConfigSequence seq) {
 		Object data = seq.getData(D_LIST_TYPE);
 		
 		//if this sequence was read from a file/stream (and not created on the fly) then this will be a byte
@@ -67,16 +71,41 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		if (data != null && data instanceof Byte)
 			return (Byte) data;
 		else {
-			//otherwise, determine it's type by class
-			Class<?> clazz = seq.getType();
-			if (clazz == Byte.class)
+			byte type = getTypeOf(seq.getType());
+			if (type == TAG_BYTE)
 				return TAG_BYTE_ARRAY;
-			else if (clazz == Integer.class)
+			else if (type == TAG_INT)
 				return TAG_INT_ARRAY;
 			else
 				return TAG_LIST;
-			
 		}
+	}
+	
+	public static byte getTypeOf(Class<?> value) {
+		if (value == null)
+			return -1;
+		
+		if (value == Byte.class)
+			return TAG_BYTE;
+		if (value == Short.class)
+			return TAG_SHORT;
+		if (value == Integer.class)
+			return TAG_INT;
+		if (value == Long.class)
+			return TAG_LONG;
+		if (value == Float.class)
+			return TAG_FLOAT;
+		if (value == Double.class)
+			return TAG_DOUBLE;
+		if (value == String.class)
+			return TAG_STRING;
+		
+		if (value == TypedConfigSequence.class)
+			return TAG_LIST;
+		if (value == ConfigSection.class)
+			return TAG_COMPOUND;
+		
+		return -1;
 	}
 	
 	public static byte getTypeOf(Object value) {
@@ -99,8 +128,8 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 			return TAG_STRING;
 		
 		//TAG_LIST, TAG_BYTE_ARRAY, TAG_INT_ARRAY
-		if (value instanceof ConfigSequence)
-			return getListType((ConfigSequence) value);
+		if (value instanceof TypedConfigSequence)
+			return getListType((TypedConfigSequence) value);
 		if (value instanceof ConfigSection)
 			return TAG_COMPOUND;
 		
@@ -108,8 +137,10 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 	}
 	
 	public static String getTagTypeName(Object value) {
-		byte type = getTypeOf(value);
-		
+		return getTagTypeName(getTypeOf(value));
+	}
+	
+	public static String getTagTypeName(byte type) {
 		if (type == TAG_BYTE)
 			return N_TAG_BYTE;
 		if (type == TAG_SHORT)
@@ -134,6 +165,30 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 			return N_TAG_INT_ARRAY;
 		
 		return N_TAG_UNKNOWN;
+	}
+	
+	private static TypedConfigSequence createList(byte type) {
+		if (type <= 0)
+			return null;
+		
+		if (type == TAG_BYTE)
+			return new TypedConfigSequence(Byte.class);
+		if (type == TAG_SHORT)
+			return new TypedConfigSequence(Short.class);
+		if (type == TAG_INT)
+			return new TypedConfigSequence(Integer.class);
+		if (type == TAG_LONG)
+			return new TypedConfigSequence(Long.class);
+		if (type == TAG_FLOAT)
+			return new TypedConfigSequence(Float.class);
+		if (type == TAG_DOUBLE)
+			return new TypedConfigSequence(Double.class);
+		if (type == TAG_LIST || type == TAG_INT_ARRAY || type == TAG_BYTE_ARRAY)
+			return new TypedConfigSequence(TypedConfigSequence.class);
+		if (type == TAG_COMPOUND)
+			return new TypedConfigSequence(ConfigSection.class);
+		
+		return null;
 	}
 	
 	@Override
@@ -185,6 +240,9 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 	
 	private String readString(DataInputStream data) throws IOException {
 		short length = data.readShort();
+		if (length == 0)
+			return "";
+		
 		byte[] bytes = new byte[length];
 		data.readFully(bytes);
 		
@@ -201,18 +259,14 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		return section;
 	}
 	
-	//start after '9' is read, we know to read a list
-	//the name is already read
-	private ConfigSequence readList(DataInputStream data) throws IOException {
-		return readList(TAG_LIST, data.readByte(), data);
-	}
-	
-	private ConfigSequence readList(byte listType, byte type, DataInputStream data) throws IOException {
-		ConfigSequence seq = new ConfigSequence();
+	private TypedConfigSequence readList(byte listType, byte itemType, DataInputStream data) throws IOException {
+		TypedConfigSequence seq = createList(itemType);
 		seq.setData(D_LIST_TYPE, listType);
 		int length = data.readInt();
-		for (int i = 0; i < length; i++)
-			seq.add(readPayload(type, data));
+		for (int i = 0; i < length; i++) {
+			Object o = readPayload(itemType, data);
+			seq.add(o);
+		}
 		
 		return seq;
 	}
@@ -250,7 +304,7 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		else if (type == TAG_STRING)
 			return readString(data);
 		else if (type == TAG_LIST)
-			return readList(data);
+			return readList(type, data.readByte(), data);
 		else if (type == TAG_COMPOUND)
 			return readCompound(data);
 		else if (type == TAG_INT_ARRAY)
@@ -279,7 +333,10 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		data.writeByte(TAG_END);
 	}
 	
-	private void putList(DataOutputStream data, ConfigSequence sequence) throws IOException {
+	private void putList(DataOutputStream data, TypedConfigSequence sequence) throws IOException {
+		if (sequence.getType() == Number.class)
+			throw new ConfigProcessorException("List is typed (Number), however the list must be more specific than that. Please use a subclass of Number.", this);
+		
 		if (sequence.isEmpty())
 			return;
 		
@@ -288,10 +345,8 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 		byte type = getTypeOf(sequence);
 		byte itemType = 0;
 		if (type == TAG_LIST) {
-			if (!sequence.isTyped() && !sequence.flattenType())
-				throw new ConfigProcessorException("NBT does not allow untyped lists/arrays", this);
 			
-			itemType = getTypeOf(sequence.get(0));
+			itemType = getTypeOf(sequence.getType());
 		} else if (type == TAG_BYTE_ARRAY)
 			itemType = TAG_BYTE;
 		else if (type == TAG_INT_ARRAY)
@@ -337,9 +392,12 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 			putString(data, (String) payload);
 		else if (payload instanceof ConfigSection)
 			putCompound(data, (ConfigSection) payload);
-		else if (payload instanceof ConfigSequence)
-			putList(data, (ConfigSequence) payload);
-		
+		else if (payload instanceof ConfigSequence) {
+			if (!(payload instanceof TypedConfigSequence))
+				throw new IllegalArgumentException("NBT does not support untyped lists");
+			
+			putList(data, (TypedConfigSequence) payload);
+		}
 	}
 	
 	public String putDocument(ConfigSection section) {
