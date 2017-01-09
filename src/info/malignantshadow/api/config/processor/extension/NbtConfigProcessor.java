@@ -1,7 +1,5 @@
 package info.malignantshadow.api.config.processor.extension;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -16,7 +14,6 @@ import info.malignantshadow.api.config.ConfigPairing;
 import info.malignantshadow.api.config.ConfigProcessorException;
 import info.malignantshadow.api.config.ConfigSection;
 import info.malignantshadow.api.config.ConfigSequence;
-import info.malignantshadow.api.config.Configs;
 import info.malignantshadow.api.config.TypedConfigSequence;
 import info.malignantshadow.api.config.processor.BinaryConfigFileProcessor;
 import info.malignantshadow.api.config.processor.TextFileConfigProcessor;
@@ -449,7 +446,7 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 			else if (o instanceof ConfigSequence)
 				str += putList("", ((ConfigSequence) o), indent + 1);
 			else
-				str += putTag(indent, null, o);
+				str += putTag(indent + 1, null, o);
 		}
 		
 		return str + "\n" + indentStr + "}";
