@@ -307,8 +307,9 @@ public class NbtConfigProcessor extends BinaryConfigFileProcessor {
 	}
 	
 	private void putString(DataOutputStream data, String str) throws IOException {
-		data.writeInt(str.length());
-		data.write(str.getBytes(CHARSET));
+		data.writeShort(str.length());
+		if (!str.isEmpty())
+			data.write(str.getBytes(CHARSET));
 	}
 	
 	private void putNamedTag(DataOutputStream data, ConfigPairing tag) throws IOException {
